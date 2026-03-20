@@ -1,17 +1,17 @@
 const ACCOUNTS = [
   {
-    icon: '🏦',
-    bank: 'BCA',
+    icon: '💙',
+    bank: 'DANA (Mempelai Pria)',
     holder: 'a.n. Agus Yulianto',
-    number: '1234567890',
-    display: '1234567890',
+    number: '085788188685',
+    display: '0857-8818-8685',
   },
   {
-    icon: '💚',
-    bank: 'GoPay / OVO',
+    icon: '💙',
+    bank: 'DANA (Mempelai Wanita)',
     holder: 'a.n. Romadlona Savitri',
-    number: '081234567890',
-    display: '0812-3456-7890',
+    number: '0882003272230',
+    display: '0882-0032-7223-0',
   },
 ];
 

@@ -1,79 +1,76 @@
-import { useState, useRef, useCallback } from 'react';
-
-function createAmbientMusic() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    const notes = [261.63, 329.63, 392.0, 493.88];
-    const gainNode = ctx.createGain();
-    gainNode.gain.setValueAtTime(0, ctx.currentTime);
-    gainNode.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 2);
-    gainNode.connect(ctx.destination);
-
-    const oscillators = notes.map((freq) => {
-      const osc = ctx.createOscillator();
-      osc.type = 'sine';
-      osc.frequency.value = freq;
-      osc.connect(gainNode);
-      return osc;
-    });
-
-    let playing = false;
-    return {
-      start() {
-        if (!playing) { oscillators.forEach((o) => o.start()); playing = true; }
-        gainNode.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.5);
-      },
-      pause() { gainNode.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.5); },
-      resume() { gainNode.gain.linearRampToValueAtTime(0.06, ctx.currentTime + 0.5); },
-    };
-  } catch {
-    return null;
-  }
-}
+import { useState, useEffect, useRef } from 'react';
 
 export default function MusicButton({ autoStart }) {
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef(null);
-  const startedRef = useRef(false);
 
-  const startMusic = useCallback(() => {
-    if (!audioRef.current) {
-      audioRef.current = createAmbientMusic();
-    }
-    if (audioRef.current && !startedRef.current) {
-      audioRef.current.start();
-      startedRef.current = true;
-      setIsPlaying(true);
-    }
+  // Inisialisasi audio hanya sekali
+  useEffect(() => {
+    const audio = new Audio('/lagu.mp3'); // Mencari file lagu.mp3 di folder public
+    audio.loop = true;
+    audioRef.current = audio;
+
+    return () => {
+      audio.pause();
+      audio.currentTime = 0;
+    };
   }, []);
 
-  // Auto start music when splash closes
-  if (autoStart && !startedRef.current) {
-    startMusic();
-  }
+  // Handle autoStart
+  useEffect(() => {
+    if (autoStart && audioRef.current) {
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => {
+          console.log('Autoplay dicegah oleh browser. Pengguna harus menekan tombol play.', err);
+        });
+    }
+  }, [autoStart]);
 
-  const handleClick = () => {
-    if (!audioRef.current) { startMusic(); return; }
+  const toggleMusic = () => {
+    if (!audioRef.current) return;
+
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.resume();
-      setIsPlaying(true);
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((err) => console.log('Playback error:', err));
     }
   };
 
   return (
     <button
       id="music-btn"
-      className={isPlaying ? '' : 'paused'}
-      aria-label="Toggle musik"
-      onClick={handleClick}
+      className={isPlaying ? 'playing' : ''}
+      onClick={toggleMusic}
+      aria-label="Toggle Music"
     >
-      <svg className="play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-      <svg className="pause" viewBox="0 0 24 24">
-        <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-      </svg>
+      <div className="music-icon-wrapper">
+        <svg
+          viewBox="0 0 24 24"
+          width="24"
+          height="24"
+          stroke="currentColor"
+          strokeWidth="2"
+          fill="currentColor"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          {isPlaying ? (
+            // Pause Icon
+            <>
+              <line x1="8" y1="5" x2="8" y2="19"></line>
+              <line x1="16" y1="5" x2="16" y2="19"></line>
+            </>
+          ) : (
+            // Play Icon
+            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+          )}
+        </svg>
+      </div>
     </button>
   );
 }

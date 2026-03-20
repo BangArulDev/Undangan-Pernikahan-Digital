@@ -10,6 +10,7 @@ import EventsSection from './components/EventsSection';
 import GallerySection from './components/GallerySection';
 import RSVPSection from './components/RSVPSection';
 import UcapanSection from './components/UcapanSection';
+import GiftSection from './components/GiftSection';
 import Footer from './components/Footer';
 import { useScrollReveal } from './hooks/useScrollReveal';
 
@@ -78,6 +79,7 @@ export default function App() {
         <CountdownSection />
         <EventsSection />
         <GallerySection />
+        <GiftSection onCopy={(num) => { navigator.clipboard.writeText(num); showToast('Nomor disalin! 📋'); }} />
         <RSVPSection onSubmit={handleRSVPSubmit} />
         <UcapanSection messages={messages} />
       </main>
